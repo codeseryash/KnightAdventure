@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Knight Game 🐴</title>
+  <style>
+    body {
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #f9d423, #ff4e50);
+      color: #222;
+    }
+    h1 {
+      margin-bottom: 5px;
+      font-size: 2.5rem;
+      color: #fff;
+      text-shadow: 2px 2px #444;
+    }
+    #controls {
+      margin-bottom: 10px;
+    }
+    #size {
+      padding: 5px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+    button {
+      padding: 8px 15px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      background: #00c853;
+      color: white;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: scale(1.1);
+      background: #009624;
+    }
+    #board {
+      display: grid;
+      gap: 2px;
+      border: 5px solid #444;
+      margin-top: 15px;
+      background: #444;
+    }
+    .cell {
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .cell:nth-child(even) {
+      background: #ffeb3b; /* yellow */
+    }
+    .cell:nth-child(odd) {
+      background: #ffc107; /* orange */
+    }
+    .cell.visited {
+      background: #4caf50 !important;
+      color: white;
+    }
+    .cell.valid {
+      background: #03a9f4 !important;
+      color: white;
+      animation: pulse 1s infinite alternate;
+    }
+    .cell.knight {
+      background: #ff5722 !important;
+      color: white;
+      font-size: 2.2rem;
+      transform: scale(1.1);
+    }
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
+    #status {
+      margin-top: 12px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #fff;
+      text-shadow: 1px 1px 2px #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Knight Adventure 🐴</h1>
+  <div id="controls">
+    <label for="size">Board Size: </label>
+    <input type="number" id="size" value="6" min="5" max="10">
+    <button onclick="startGame()">Restart Game</button>
+  </div>
+  
+  <div id="board"></div>
+  <div id="status"></div>
+
+  <script>
+    let size, boardEl, knightPos, visitedCount;
+
+    function startGame() {
+      size = parseInt(document.getElementById('size').value);
+      boardEl = document.getElementById('board');
+      boardEl.innerHTML = "";
+      boardEl.style.gridTemplateColumns = `repeat(${size}, 70px)`;
+      knightPos = null;
+      visitedCount = 0;
+      document.getElementById('status').innerText = "🐴 Tap any square to start!";
+      
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          let cell = document.createElement('div');
+          cell.className = "cell";
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.addEventListener('click', () => handleClick(r, c));
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function handleClick(r, c) {
+      let cell = getCell(r, c);
+      if (!knightPos) {
+        knightPos = {r, c};
+        markKnight(cell);
+        highlightMoves();
+      } else {
+        if (!cell.classList.contains("valid")) return;
+        knightPos = {r, c};
+        markKnight(cell);
+        clearHighlights();
+        highlightMoves();
+      }
+    }
+
+    function markKnight(cell) {
+      document.querySelectorAll('.cell.knight').forEach(c => c.classList.remove("knight"));
+      cell.classList.add("knight");
+      cell.innerText = "🐴";
+      if (!cell.classList.contains("visited")) {
+        cell.classList.add("visited");
+        visitedCount++;
+      }
+    }
+
+    function getCell(r, c) {
+      return document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+    }
+
+    function clearHighlights() {
+      document.querySelectorAll('.cell.valid').forEach(c => c.classList.remove("valid"));
+    }
+
+    function highlightMoves() {
+      const moves = [
+        [2, 1], [2, -1], [-2, 1], [-2, -1],
+        [1, 2], [1, -2], [-1, 2], [-1, -2]
+      ];
+      let validMoves = 0;
+      moves.forEach(([dr, dc]) => {
+        let nr = knightPos.r + dr, nc = knightPos.c + dc;
+        if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+          let cell = getCell(nr, nc);
+          if (!cell.classList.contains("visited")) {
+            cell.classList.add("valid");
+            validMoves++;
+          }
+        }
+      });
+      
+      if (visitedCount === size * size) {
+        document.getElementById('status').innerText = "🎉 You won! All cells visited!";
+      } else if (validMoves === 0) {
+        document.getElementById('status').innerText = "😢 No more moves. Game Over!";
+      } else {
+        document.getElementById('status').innerText = `Visited: ${visitedCount}/${size*size}`;
+      }
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
