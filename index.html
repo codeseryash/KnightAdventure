@@ -115,6 +115,10 @@
 
     function startGame() {
       size = parseInt(document.getElementById('size').value);
+      if (size < 5) {
+        alert("Knight's Tour is not possible on boards smaller than 5x5. Please choose 5 or larger.");
+        return;
+      }
       boardEl = document.getElementById('board');
       boardEl.innerHTML = "";
       boardEl.style.gridTemplateColumns = `repeat(${size}, 70px)`;
